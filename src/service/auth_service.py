@@ -8,6 +8,7 @@ from src.config.auth import (
     get_user,
     parameters,
 )
+from src.model.enum import UserRole
 from src.model.user import User
 from src.schema.user_schema import Token, UserCreate, UserLogin
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +20,13 @@ async def user_register(user: UserCreate, db: AsyncSession) -> User:
         raise ValueError("Username already taken")
 
     hashed_password = get_password_hash(user.password)
-    db_user = User(username=user.username, password=hashed_password, role=user.role)
+
+    try:
+        role = UserRole(user.role)
+    except KeyError:
+        raise ValueError(f"Invalid role. Must be one of: {[r.name for r in UserRole]}")
+    
+    db_user = User(username=user.username, password=hashed_password, role=role)
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
