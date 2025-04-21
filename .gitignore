@@ -1,1 +1,17 @@
+# Конфигурация
 .venv
+venv/
+ENV/
+
+
+# Кеш Python
+__pycache__/
+*.py[cod]
+*.pyc
+.python-version
+
+# Alembic
+migrations/versions/*
+
+#Секреты
+.env
