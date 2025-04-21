@@ -8,11 +8,14 @@ class Route(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String)
+    price: Mapped[float] = mapped_column(Float)
+    
     departure_place: Mapped[str] = mapped_column(String)
     arrival_place: Mapped[str] = mapped_column(String)
-    price: Mapped[float] = mapped_column(Float)
+    
+    
     departure_date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False), nullable=False
+        DateTime(timezone=True), nullable=False
     )
 
     bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="route")

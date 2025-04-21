@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from src.model.booking import Booking
+
 
 class Token(BaseModel):
     access_token: str
@@ -15,9 +17,18 @@ class TokenData(BaseModel):
 class UserCreate(BaseModel):
     username: str
     password: str
-    role: str = "USER"
+    role: str = "ROLE_USER"
 
 
 class UserLogin(BaseModel):
     username: str
     password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+
+
+class UserBookings(BaseModel):
+    bookings: list[Booking]
