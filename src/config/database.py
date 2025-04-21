@@ -20,14 +20,21 @@ class Settings(BaseSettings):
         """Синхронная URL для миграций."""
         return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 class Base(DeclarativeBase):
     pass
 
 
-settings = Settings() # type: ignore
+settings = Settings()  # type: ignore
 engine = create_async_engine(url=settings.DATABASE_URL, echo=False)
 
-Session = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+async_session = async_sessionmaker(
+    bind=engine, class_=AsyncSession, expire_on_commit=False
+)
+
+
+async def get_db():
+    async with async_session() as session:
+        yield session
