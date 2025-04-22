@@ -3,8 +3,8 @@ from fastapi.responses import JSONResponse
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config.logger import logger
 from src.config.database import get_db
+from src.config.logger import logger
 from src.exception.auth_exception import refresh_token_exception
 from src.schema.user_schema import (
     Token,
@@ -12,7 +12,6 @@ from src.schema.user_schema import (
     UserLogin,
 )
 from src.service.auth_service import perform_login, perform_refresh, user_register
-
 
 auth = APIRouter()
 

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from src.api.test import test
+
 from src.api.auth_route import auth
+from src.api.test import test
 
 app = FastAPI()
 prefix = "/api/v1"

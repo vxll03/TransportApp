@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, ForwardRef
+
 from pydantic import BaseModel, field_validator, model_validator
 
 from src.model.enum import UserRole
-
 
 if TYPE_CHECKING:
     from src.schema.booking_schema import BookingResponse

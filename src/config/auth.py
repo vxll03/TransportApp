@@ -1,18 +1,18 @@
 from datetime import datetime, timedelta, timezone
+
 from fastapi import Depends, Request
-from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from pydantic import Field, PositiveInt
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.exception.auth_exception import credentials_exception, refresh_token_exception
 from src.model import User
 from src.schema import TokenData
-from src.exception.auth_exception import credentials_exception, refresh_token_exception
 
 from .database import get_db
-from jose import jwt, JWTError
 
 
 # Импорт настроек из .env

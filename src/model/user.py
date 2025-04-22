@@ -1,7 +1,10 @@
-from sqlalchemy import String, Enum
-from src.config import Base
+from sqlalchemy import Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.config import Base
+
 from .enum import UserRole
+
 
 class User(Base):
     __tablename__ = "users"

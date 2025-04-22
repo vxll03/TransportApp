@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, ForwardRef
+
 from pydantic import BaseModel, field_validator
 
 if TYPE_CHECKING:

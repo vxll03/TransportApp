@@ -1,6 +1,9 @@
 from datetime import timedelta
+
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.auth import (
     authenticate_user,
     create_access_token,
@@ -13,7 +16,6 @@ from src.config.auth import (
 from src.model.enum import UserRole
 from src.model.user import User
 from src.schema.user_schema import Token, UserCreate, UserLogin
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def user_register(user: UserCreate, db: AsyncSession) -> User:

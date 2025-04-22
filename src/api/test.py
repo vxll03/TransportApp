@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends
 from src.config.auth import get_current_user
 from src.model.user import User
 
-
 test = APIRouter()
 
 
