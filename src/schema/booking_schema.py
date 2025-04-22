@@ -24,11 +24,11 @@ class BookingCreate(BaseModel):
 
 class BookingResponse(BaseModel):
     id: int
-    route: RouteResponse
-    user: UserResponse
+    route: "RouteResponse"
+    user: "UserResponse"
 
-    booking_date: datetime
-    departure_date: datetime
+    booking_date: str
+    departure_date: str
 
     state: State
 
@@ -39,3 +39,7 @@ class BookingResponse(BaseModel):
 
 class BookingUpdate(BaseModel):
     state: State
+
+
+# IMPORTANT
+BookingResponse.model_rebuild()

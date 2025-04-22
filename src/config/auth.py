@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import Field, PositiveInt
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.model import User
 from src.schema import TokenData
+from src.exception.auth_exception import credentials_exception, refresh_token_exception
 
 from .database import get_db
 from jose import jwt, JWTError
@@ -37,10 +38,10 @@ class Parameters(BaseSettings):  # Обязательно наследуемся
     )
 
 
-parameters = Parameters() # type: ignore
+parameters = Parameters()  # type: ignore
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -65,12 +66,14 @@ async def authenticate_user(db: AsyncSession, username: str, password: str):
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
+    to_encode.update({"type": "access"})
+
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-
     to_encode.update({"exp": expire})
+
     encoded_jwt = jwt.encode(
         to_encode, parameters.SECRET_KEY, algorithm=parameters.ALGORITHM
     )
@@ -79,6 +82,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 def create_refresh_token(data: dict):
     to_encode = data.copy()
+    to_encode.update({"type": "refresh"})
+
     expire = datetime.now(timezone.utc) + timedelta(
         days=parameters.REFRESH_TOKEN_EXPIRE_DAYS
     )
@@ -91,22 +96,23 @@ def create_refresh_token(data: dict):
     return encoded_jwt
 
 
+# Валидация пользователя через Access Token (авторизация)
 async def get_current_user(
-    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
+        token = request.cookies.get("access_token")  # type: ignore
+        if not token:
+            raise credentials_exception
         payload = jwt.decode(
             token, parameters.SECRET_KEY, algorithms=[parameters.ALGORITHM]
         )
+
         username: str | None = payload.get("sub")
         role: str | None = payload.get("role")
 
-        if username is None:
+        if username is None or payload.get("type") != "access":
             raise credentials_exception
 
         token_data = TokenData(username=username, role=role)
@@ -118,3 +124,25 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+
+# Валидация Refresh Token для обновления Access Token
+async def validate_refresh_token(db: AsyncSession, refresh_token: str):
+    try:
+        payload = jwt.decode(
+            refresh_token, parameters.SECRET_KEY, algorithms=[parameters.ALGORITHM]
+        )
+        username: str | None = payload.get("sub")
+        if not username:
+            raise refresh_token_exception
+
+        if payload.get("type") != "refresh":
+            raise refresh_token_exception
+
+        user = await get_user(db, username=username)
+        if not user:
+            raise refresh_token_exception
+
+        return user
+    except JWTError:
+        raise refresh_token_exception
